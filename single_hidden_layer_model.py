@@ -5,6 +5,7 @@ from os import listdir
 from PIL import Image
 import shutil
 import scipy.linalg.blas as blas
+import sys, getopt
 
 
 # def processing_img(directory='./dataset/train/sushi/'):
@@ -21,7 +22,7 @@ import scipy.linalg.blas as blas
 
 
 # upload the data from dataset
-def upload_img_data(directory='./dataset/train/data1'):
+def upload_img_data(directory='./dataset/train/data'):
     '''
     read the images and return the matrix of these images
     :param directory: directory which store these images
@@ -95,7 +96,7 @@ def layer_sizes(X):
 
 
 # initialize the model's parameters
-def initialize_parameters(n_x, n_h, n_y):
+def initialize_parameters(n_x, n_h, n_y, seed):
     '''
     randomly initialize the parameters of w and b.
     :param n_x: size of input layer
@@ -107,7 +108,7 @@ def initialize_parameters(n_x, n_h, n_y):
                             W2 -- weight matrix of shape (n_y, n_h)
                             b2 -- bias vector of shape(n_y, 1)
     '''
-    np.random.seed(16)  # set random seed for the convenience of reproduce
+    np.random.seed(seed)  # set random seed for the convenience of reproduce
 
     W1 = np.random.randn(n_h, n_x).astype(dtype='float32')
     b1 = np.zeros((n_h, 1)).astype(dtype='float32')
@@ -223,7 +224,7 @@ def backward_propagation(parameters, cache, X, Y):
 
 # using gradient decent to update our parameters
 
-def update_parameters(parameters, grads, learning_rate=1.1):
+def update_parameters(parameters, grads, learning_rate):
     '''
     Updates parameters using the gradient descent
     :param parameters: python dictionary containing our parameters
@@ -255,7 +256,7 @@ def update_parameters(parameters, grads, learning_rate=1.1):
     return parameters
 
 
-def nn_model(X, Y, n_h, num_iterations=10000, print_cost=False):
+def nn_model(X, Y, n_h, num_iterations=1000, print_cost=False, seed=16, alpha=1.1):
     '''
     our neural network model, combing all the function above together
     :param X: training samples
@@ -266,19 +267,24 @@ def nn_model(X, Y, n_h, num_iterations=10000, print_cost=False):
     :return:
             parameters -- parameters learnt by the model
     '''
-    np.random.seed(3)
+    if num_iterations is None:
+        num_iterations = 1000
+    if seed is None:
+        seed = 16
+    if alpha is None:
+        alpha = 1.1
 
     n_x = layer_sizes(X)[0]
     n_y = layer_sizes(X)[2]
 
-    params = initialize_parameters(n_x, n_h, n_y)
+    params = initialize_parameters(n_x, n_h, n_y, seed=seed)
 
     # Loop gradient descent
     for i in range(num_iterations):
         A2, cache = forward_propagation(X, params)
         cost = compute_cost(A2, Y, params)
         grads = backward_propagation(params, cache, X, Y)
-        params = update_parameters(params, grads)
+        params = update_parameters(params, grads, learning_rate=alpha)
 
         if print_cost and i % 100 == 0:
             print("Cost after iteration %i: %f" % (i, cost))
@@ -301,11 +307,33 @@ def predict(parameters, X):
     return predictions
 
 
-x, y = upload_img_data()
-X, Y = processing_image_matrix(x, y)
+def main(argv):
+    x, y = upload_img_data()
+    X, Y = processing_image_matrix(x, y)
 
-parameters = nn_model(X, Y, 5, num_iterations=5000, print_cost=True)
-predictions = predict(parameters, X)
+    try:
+        opts, _ = getopt.getopt(argv, 'n:s:a:', ['num_iterations=', 'seed=', 'alpha='])
+    except getopt.GetoptError:
+        print('get parameters error, using the default parameters!')
 
-print("predictions mean = " + str(np.mean(predictions)))
-print('Accuracy: %d' % float((np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
+    num_iterations, seed, alpha = None, None, None
+    for opt, arg in opts:
+        if opt == '-n' or opt == '--num_iterations':
+            num_iterations = int(arg)
+        elif opt == '-s' or opt == '--seed':
+            seed = int(arg)
+        elif opt == '-a' or opt == '--alpha':  # learning rate
+            alpha = float(arg)
+        else:
+            pass
+
+    parameters = nn_model(X, Y, 5, num_iterations=num_iterations, print_cost=True, seed=seed, alpha=alpha)
+    predictions = predict(parameters, X)
+
+    print("predictions mean = " + str(np.mean(predictions)))
+    print('Accuracy: %d' % float(
+        (np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
