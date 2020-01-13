@@ -304,7 +304,7 @@ def predict(parameters, X):
 x, y = upload_img_data()
 X, Y = processing_image_matrix(x, y)
 
-parameters = nn_model(X, Y, 5, num_iterations=20000, print_cost=True)
+parameters = nn_model(X, Y, 5, num_iterations=5000, print_cost=True)
 predictions = predict(parameters, X)
 
 print("predictions mean = " + str(np.mean(predictions)))
