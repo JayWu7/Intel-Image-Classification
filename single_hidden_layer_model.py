@@ -21,7 +21,7 @@ import scipy.linalg.blas as blas
 
 
 # upload the data from dataset
-def upload_img_data(directory='./dataset/train/data'):
+def upload_img_data(directory='./dataset/train/data1'):
     '''
     read the images and return the matrix of these images
     :param directory: directory which store these images
@@ -286,7 +286,26 @@ def nn_model(X, Y, n_h, num_iterations=10000, print_cost=False):
     return params
 
 
+def predict(parameters, X):
+    '''
+    Using the learned parameters, predicts a class for each sample in X
+    :param parameters: python dict containing our parameters
+    :param X: input data
+    :return:
+        predictions -- vector of predictions of our model (0:sushi, 1:sandwich)
+    '''
+    A2, cache = forward_propagation(X, parameters)
+    predictions = [1 if i > 0.5 else 0 for i in np.squeeze(A2)]
+    predictions = np.array(predictions)
+
+    return predictions
+
+
 x, y = upload_img_data()
 X, Y = processing_image_matrix(x, y)
 
-parameters = nn_model(X, Y, 5, num_iterations=10000, print_cost=True)
+parameters = nn_model(X, Y, 5, num_iterations=20000, print_cost=True)
+predictions = predict(parameters, X)
+
+print("predictions mean = " + str(np.mean(predictions)))
+print('Accuracy: %d' % float((np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
