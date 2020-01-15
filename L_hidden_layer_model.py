@@ -113,82 +113,177 @@ def initialize_parameters_deep(layer_dims, seed=16):
     return parameters
 
 
+# def linear_forward(A, W, b):
+#     '''
+#     Implement the linear part of a layer's forward propagation.
+#     :param A: activations from previous layer
+#     :param W: weight matrix
+#     :param b: bias vector
+#     :return:
+#             Z -- the input of the activation function
+#             cache -- a python tuple containing 'A', 'W', 'b'
+#     '''
+#     # Z = np.dot(W, A) + b
+#     Z = blas.sgemm(alpha=1.0, a=W, b=A) + b
+#
+#     assert Z.shape == (W.shape[0], A.shape[1])
+#     cache = (A, W, b)
+#
+#     return Z, cache
 def linear_forward(A, W, b):
-    '''
+    """
     Implement the linear part of a layer's forward propagation.
-    :param A: activations from previous layer
-    :param W: weight matrix
-    :param b: bias vector
-    :return:
-            Z -- the input of the activation function
-            cache -- a python tuple containing 'A', 'W', 'b'
-    '''
-    # Z = np.dot(W, A) + b
-    Z = blas.sgemm(alpha=1.0, a=W, b=A) + b
 
-    assert Z.shape == (W.shape[0], A.shape[1])
+    Arguments:
+    A -- activations from previous layer (or input data): (size of previous layer, number of examples)
+    W -- weights matrix: numpy array of shape (size of current layer, size of previous layer)
+    b -- bias vector, numpy array of shape (size of the current layer, 1)
+
+    Returns:
+    Z -- the input of the activation function, also called pre-activation parameter
+    cache -- a python tuple containing "A", "W" and "b" ; stored for computing the backward pass efficiently
+    """
+
+    ### START CODE HERE ### (≈ 1 line of code)
+    Z = np.dot(W, A) + b
+    ### END CODE HERE ###
+
+    assert (Z.shape == (W.shape[0], A.shape[1]))
     cache = (A, W, b)
 
     return Z, cache
 
 
-def linear_activation_forward(A_prev, w, b, activation):
-    '''
-    Implement the forward propagation for the Linear->Activation layer
+# def linear_activation_forward(A_prev, W, b, activation):
+#     '''
+#     Implement the forward propagation for the Linear->Activation layer
+#
+#     :param A_prev: activations from previous layer
+#     :param w: weights matrix
+#     :param b: bias vector
+#     :param activation: the activation method to be used in this layer, a string
+#     :return:
+#             A -- the output of the activation function
+#             cache -- a python tuple containing 'linear_cache' and 'activation_cache'
+#     '''
+#
+#     if activation == 'sigmoid':
+#         Z, linear_cache = linear_forward(A_prev, W, b)
+#         A, activation_cache = sigmoid(Z)
+#
+#     elif activation == 'relu':
+#         Z, linear_cache = linear_forward(A_prev, W, b)
+#         A, activation_cache = relu(Z)
+#
+#     else:
+#         print('Activation is wrong, please check it as one of ["sigmoid", "relu"]')
+#         return None
+#
+#     assert (A.shape == (W.shape[0], A_prev.shape[1]))
+#     cache = (linear_cache, activation_cache)
+#
+#     return A, cache
 
-    :param A_prev: activations from previous layer
-    :param w: weights matrix
-    :param b: bias vector
-    :param activation: the activation method to be used in this layer, a string
-    :return:
-            A -- the output of the activation function
-            cache -- a python tuple containing 'linear_cache' and 'activation_cache'
-    '''
+def linear_activation_forward(A_prev, W, b, activation):
+    """
+    Implement the forward propagation for the LINEAR->ACTIVATION layer
 
-    if activation == 'sigmoid':
-        Z, linear_cache = linear_forward(A_prev, w, b)
+    Arguments:
+    A_prev -- activations from previous layer (or input data): (size of previous layer, number of examples)
+    W -- weights matrix: numpy array of shape (size of current layer, size of previous layer)
+    b -- bias vector, numpy array of shape (size of the current layer, 1)
+    activation -- the activation to be used in this layer, stored as a text string: "sigmoid" or "relu"
+
+    Returns:
+    A -- the output of the activation function, also called the post-activation value
+    cache -- a python tuple containing "linear_cache" and "activation_cache";
+             stored for computing the backward pass efficiently
+    """
+
+    if activation == "sigmoid":
+        # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
+        ### START CODE HERE ### (≈ 2 lines of code)
+        Z, linear_cache = linear_forward(A_prev, W, b)
         A, activation_cache = sigmoid(Z)
+        ### END CODE HERE ###
 
-    elif activation == 'relu':
-        Z, linear_cache = linear_forward(A_prev, w, b)
+    elif activation == "relu":
+        # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
+        ### START CODE HERE ### (≈ 2 lines of code)
+        Z, linear_cache = linear_forward(A_prev, W, b)
         A, activation_cache = relu(Z)
+        ### END CODE HERE ###
 
-    else:
-        print('Activation is wrong, please check it as one of ["sigmoid", "relu"]')
-        return None
-
-    assert (A.shape == (w.shape[0], A_prev.shape[1]))
+    assert (A.shape == (W.shape[0], A_prev.shape[1]))
     cache = (linear_cache, activation_cache)
 
     return A, cache
 
+#
+# def L_model_forward(X, parameters):
+#     '''
+#     Implement forward propagation for our L layers model.
+#     :param X: input data, numpy array of shape (input size, number of examples)
+#     :param parameters:  output of the initialize_parameters_deep()
+#     :return:
+#             AL -- last post-activation value
+#             caches -- list of caches containing:
+#                             every cache of linear_activation_forward()
+#     '''
+#
+#     caches = []
+#     A = X
+#     L = len(parameters) // 2
+#
+#     for l in range(1, L):
+#         A_prev = A
+#         A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], 'relu')
+#         caches.append(cache)
+#
+#     AL, cache = linear_activation_forward(A, parameters['W' + str(L)], parameters['b' + str(L)], 'sigmoid')
+#     caches.append(cache)
+#
+#     assert AL.shape == (1, X.shape[1])
+#
+#     return AL, caches
 
 def L_model_forward(X, parameters):
-    '''
-    Implement forward propagation for our L layers model.
-    :param X: input data, numpy array of shape (input size, number of examples)
-    :param parameters:  output of the initialize_parameters_deep()
-    :return:
-            AL -- last post-activation value
-            caches -- list of caches containing:
-                            every cache of linear_activation_forward()
-    '''
+    """
+    Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID computation
+
+    Arguments:
+    X -- data, numpy array of shape (input size, number of examples)
+    parameters -- output of initialize_parameters_deep()
+
+    Returns:
+    AL -- last post-activation value
+    caches -- list of caches containing:
+                every cache of linear_activation_forward() (there are L-1 of them, indexed from 0 to L-1)
+    """
 
     caches = []
     A = X
-    L = len(parameters) // 2
+    L = len(parameters) // 2  # number of layers in the neural network
 
+    # Implement [LINEAR -> RELU]*(L-1). Add "cache" to the "caches" list.
     for l in range(1, L):
         A_prev = A
+        ### START CODE HERE ### (≈ 2 lines of code)
         A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], 'relu')
         caches.append(cache)
+        ### END CODE HERE ###
 
+    # Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
+    ### START CODE HERE ### (≈ 2 lines of code)
     AL, cache = linear_activation_forward(A, parameters['W' + str(L)], parameters['b' + str(L)], 'sigmoid')
     caches.append(cache)
+    ### END CODE HERE ###
 
-    assert AL.shape == (1, X.shape[1])
+    assert (AL.shape == (1, X.shape[1]))
+    print(AL)
 
     return AL, caches
+
 
 
 def compute_cost(AL, Y):
@@ -341,9 +436,6 @@ def L_layer_model(X, Y, layer_dims, learning_rate=0.5, num_iterations=1000, seed
             parameters -- parameters learnt by the model, which can nbe used in the prediction.
     '''
 
-    costs = []
-    parameters = initialize_parameters_deep(layer_dims)
-
     if num_iterations is None:
         num_iterations = 1000
     if seed is None:
@@ -351,9 +443,10 @@ def L_layer_model(X, Y, layer_dims, learning_rate=0.5, num_iterations=1000, seed
     if learning_rate is None:
         learning_rate = 0.5
 
-    import time
+    costs = []
+    parameters = initialize_parameters_deep(layer_dims, seed=seed)
+
     for i in range(0, num_iterations):
-        t = time.time()
         AL, caches = L_model_forward(X, parameters)
         cost = compute_cost(AL, Y)
         grads = L_model_backward(AL, Y, caches)
@@ -361,7 +454,6 @@ def L_layer_model(X, Y, layer_dims, learning_rate=0.5, num_iterations=1000, seed
         if print_cost and i % 1 == 0:
             print('Cost after iteration %i: %f' % (i, cost))
             costs.append(cost)
-        print(time.time() - t)
     # plot the cost
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
